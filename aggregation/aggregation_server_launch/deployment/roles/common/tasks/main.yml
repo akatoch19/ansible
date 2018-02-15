@@ -1,0 +1,141 @@
+##
+# updates the APT package cache and install packages
+# servers necessary for web. also enables firewall
+##
+#- include: filebeat.yml
+#  when: update_node or filebeat_true
+
+- name: update apt cache
+  apt: update_cache=yes
+  become: true
+  become_user: root
+
+# Install Aggregation System Deendencies 
+
+- name: Install Python-Dev
+  apt: name=python-dev  state=present
+  become: true
+  become_user: root
+
+- name: Install build-essential
+  apt: name=build-essential state=present
+  become: true
+  become_user: root
+
+- name: Install libssl-dev
+  apt: name=libssl-dev state=present
+  become: true
+  become_user: root
+
+- name: Install Python-Pip
+  apt: name=python-pip state=latest
+  become: true
+  become_user: root
+
+- name: Install libffi-dev
+  apt: name=python-dev state=present
+  become: true
+  become_user: root
+
+- name: Download latest repo for apt for nodejs
+  shell: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+  become: true
+  become_user: root  
+  when: update_node
+
+- name: Install latest version of node
+  shell: apt-get install -y nodejs
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "kafka-node" node.js package
+  npm:
+    name: kafka-node
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "xmlhttprequest" node.js package.
+  npm:
+    name: xmlhttprequest
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "express" node.js package.
+  npm:
+    name: express
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "winston" node.js package.
+  npm:
+    name: winston
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "body-parser" node.js package.
+  npm:
+    name: body-parser
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+- name: Install "phantom" node.js package.
+  npm:
+    name: phantom
+    path: "{{ appdir }}"
+  become: true
+  become_user: root
+  when: update_node
+
+
+- name: Install NPM PIP package globally
+  npm: name=pip path=/home/aggre
+  become: true
+  become_user: root
+
+- name: Install npm package npm install requests
+  npm: name=request path=/home/aggre
+  become: true
+  become_user: root
+
+- name: Install npm package crack and install pip -U upgrade setuptools
+  script: ./script.sh
+#  npm: name=crack path=/home/aggre
+#  command: chdir=/home/aggre {{ item }}
+#  with_items:
+#    - npm install crack
+  become: true
+  become_user: root
+
+#- name: upgrade pip
+#  pip:
+#    name: pip
+#    extra_args: --upgrade
+
+- name: Install global python requirements Scrapy 
+  pip: name=Scrapy state=present 
+  become: true
+  become_user: root
+
+- name: Install global python requirements cryptography
+  pip: name=cryptography state=present  
+  become: true
+  become_user: root
+
+- name: Install global python requirements incapsula-cracker
+  pip: name=incapsula-cracker state=present
+  become: true
+  become_user: root
+
+- include: filebeat.yml
+  when: update_node or filebeat_true

@@ -1,0 +1,18 @@
+---
+hosts: "aggregation"
+user: "devops"
+deploy_user: "devops"
+ansible_become: true
+serial: 50
+appdir: "/home/aggre/phantom"
+dir: "{{ appdir }}/js-scraper"
+#source: "{{ dir }}/config/config.{{ configenv }}prod.js"
+source: "{{ dir }}/config/config.freeprod.js"
+destination: "{{ dir }}/config/config.js"
+install_packages: true
+dbname: "bazaarify"
+#Git Details
+branch: master
+deploy_key_dir: ssh-keys
+local_deploy_key_dir: /var/lib/jenkins/{{ deploy_key_dir }}
+code_repository: git@github.com:bazaarify/js-scraper.git

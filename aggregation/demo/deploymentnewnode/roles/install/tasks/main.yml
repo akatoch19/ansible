@@ -1,0 +1,38 @@
+---
+
+#- name : update status in database before deployment
+#  shell : wget -qO- "http://54.219.83.169:90/updateserver?env=freeprod&ip="{{ ansible_host }}"&update_status=0&remark=Update Started" &> /dev/null;
+
+#- name: running npm install
+#  shell: npm install chdir={{ appdir }}/js-scraper
+#  become: yes
+#  become_user: root
+#  when: install_packages
+
+#- name:  "Install forever (to run Node.js app)."
+#  npm: name=forever global=yes state=latest
+#  become: yes
+#  become_user: root
+
+#- name: "Check list of Node.js apps running."
+#  command: forever list
+#  register: forever_list
+#  changed_when: false
+#  sudo: yes
+
+#- name: Stop and start npm forever
+#  shell: chdir={{ appdir }}/js-scraper {{ item }}
+#  with_items:
+#    - 'forever stopall'
+#     - 'forever start --minUptime 1000 --spinSleepTime 1000 -o out.log -e err.log server.js'
+#  sudo: yes
+
+#- name: waitin for port 8080 to become active
+#  wait_for: port=8080 delay=1 timeout=60
+#  sudo: yes
+
+#- name: Insert instance details into the database
+#  command: mysql --user={{ mysqlUser }} --password={{ mysqlPassword }} {{ dbname }} --host={{ mysqlHost }} << EOF --execute="INSERT INTO bazaarify.aggregation_server(hostname,create_date,update_remark)VALUES('http://{{ ansible_host }}:8080/',now(),'Ready');" EOF
+
+#- name : update status  
+#  shell : wget -qO- "http://54.219.83.169:90/updateserver?env=freeprod&ip="{{ ansible_host }}"&update_status=1&remark=Updated Successfully" &> /dev/null;

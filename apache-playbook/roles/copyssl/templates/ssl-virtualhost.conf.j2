@@ -1,0 +1,49 @@
+<VirtualHost *:80>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP_HOST} ^{{ domain_name }}$ [NC]
+    RewriteRule ^/(.*) https://{{ domain_name }}/$1 [R=301,L]
+    DocumentRoot {{ doc_root }}
+    ServerName {{ domain_name }}
+    ServerAdmin  {{ admin_email }}
+</VirtualHost>
+
+<VirtualHost *:443>
+        DocumentRoot {{ doc_root }}
+        ServerName {{ domain_name }}
+        ServerAdmin  {{ admin_email }}
+        ErrorLog "|{{ apache_dir }}/bin/rotatelogs {{ apache_log_dir }}/{{ ssl_hostname }}/error-%Y-%m-%d-%H_%M_%S.log 2M"
+        TransferLog "|{{ apache_dir }}/bin/rotatelogs {{ apache_log_dir }}/{{ ssl_hostname }}/access-%Y-%m-%d-%H_%M_%S.log 2M"
+        SSLEngine on
+        RewriteEngine On
+        SSLProxyEngine On
+        RewriteCond "%{REQUEST_FILENAME}"       !-f
+        RewriteCond "%{REQUEST_FILENAME}"       !-d
+        RewriteRule ^/crmapi/(.*) "http://common-services.birdeye.com/$1" [P]
+        ProxyPassReverse "/crmapi/" "http://common-services.birdeye.com/"
+       
+        RewriteCond "%{REQUEST_FILENAME}"       !-f
+        RewriteCond "%{REQUEST_FILENAME}"       !-d
+        RewriteRule ^/api/(.*) "http://api.birdeye.com:8080/$1" [P]
+        ProxyPassReverse "/api/" "http://api.birdeye.com:8080/"
+       
+        SSLCipherSuite ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4
+        SSLProtocol all -SSLv2 -SSLv3
+        SSLHonorCipherOrder on
+        Header always set X-Content-Type-Options nosniff
+                Header always set Strict-Transport-Security "max-age=63072000"
+        SSLCertificateFile "{{ ssl_dir }}/{{ domain_name }}/{{ CertificateFile }}"
+        SSLCertificateKeyFile "{{ ssl_dir }}/{{ domain_name }}/{{ CertificateKeyFile }}"
+        SSLCertificateChainFile "{{ ssl_dir }}/{{ domain_name }}/{{ CertificateChainFile }}"
+        <FilesMatch "\.(cgi|shtml|phtml|php)$">
+                SSLOptions +StdEnvVars
+        </FilesMatch>
+        <Directory "{{ apache_dir }}/cgi-bin">
+                SSLOptions +StdEnvVars
+        </Directory>
+        BrowserMatch ".*MSIE.*" \
+                         nokeepalive ssl-unclean-shutdown \
+                         downgrade-1.0 force-response-1.0
+        CustomLog "|{{ apache_dir }}/bin/rotatelogs {{ apache_log_dir }}/{{ ssl_hostname }}/ssl_request--%Y-%m-%d-%H_%M_%S.log 2M" \
+                          "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+</VirtualHost>

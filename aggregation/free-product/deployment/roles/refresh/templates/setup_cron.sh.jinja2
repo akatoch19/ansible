@@ -1,0 +1,114 @@
+#!/bin/bash
+
+# Change mode to executable
+#crontab -r
+chmod +x /home/aggre/phantom/js-scraper/se-tools/aggregation/*sh
+chmod +x /home/aggre/phantom/js-scraper/script/ritesh/*sh
+
+echo "SETTING-UP REQUIRED CRON JOBS"
+echo "---------------------------------"
+
+time_1="0 5 * * *"
+time_2="0 17 * * *"
+
+scriptPath="/home/aggre/phantom/js-scraper/se-tools/aggregation/aggregationServerHealthCheck.sh"
+sourcesPath="/home/aggre/phantom/js-scraper/se-tools/aggregation/sources"
+logPath="/home/aggre/phantom/js-scraper/se-tools/aggregation/aggregationServerHealthCheck.log"
+
+line_1="# $time_1 /bin/bash $scriptPath $sourcesPath > $logPath 2>&1"
+line_2="# $time_2 /bin/bash $scriptPath $sourcesPath > $logPath 2>&1"
+
+numLineFound=$(crontab -l | grep "setup_unix.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+	echo "removing setup_unix.sh existing entry"
+	crontab -l | sed '/.*setup_unix.*/d' | crontab -
+fi
+
+numLineFound=$(crontab -l | grep "aggregationServerHealthCheck.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+    echo "removing all the existing 'aggregationServerHealthCheck' entries"
+    crontab -l | sed '/.*aggregationServerHealthCheck.*/d' | crontab -
+fi
+
+diskmon="*/30 * * * * /home/aggre/phantom/js-scraper/script/ritesh/diskmon.sh  > /home/aggre/phantom/js-scraper/script/ritesh/logs/diskmon_cron.log 2>&1"
+numLineFound=$(crontab -l | grep "diskmon.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+    echo "removing diskmon.sh existing entry"
+    crontab -l | sed '/.*diskmon.*/d' | crontab -
+fi
+
+loadaverage="*/30 * * * * /home/aggre/phantom/js-scraper/script/ritesh/load_average.sh > /home/aggre/phantom/js-scraper/script/ritesh/logs/load_average_cron.log 2>&1"
+numLineFound=$(crontab -l | grep "load_average.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+    echo "removing load_average.sh existing entry"
+    crontab -l | sed '/.*load_average.*/d' | crontab -
+fi
+
+killtomcat="*/10 * * * * /home/aggre/phantom/js-scraper/script/ritesh/kill_long_tomcat.sh > /home/aggre/phantom/js-scraper/script/ritesh/logs/kill_long_tomcat_cron.log 2>&1"
+numLineFound=$(crontab -l | grep "kill_long_tomcat.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+    echo "removing kill_long_tomcat.sh existing entry"
+    crontab -l | sed '/.*kill_long_tomcat.*/d' | crontab -
+fi
+
+mysqlstatus="# */5 * * * * /home/aggre/phantom/js-scraper/script/ritesh/mysql_status.sh > /home/aggre/phantom/js-scraper/script/ritesh/logs/mysql_status.log 2>&1"
+numLineFound=$(crontab -l | grep "mysql_status.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+	echo "removing mysql_status.sh existing entry"
+	crontab -l | sed '/.*mysql_status.*/d' | crontab -
+fi
+
+numLineFound=$(crontab -l | grep "service_monitoring.sh" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+	echo "removing service_monitoring.sh existing entry"
+	crontab -l | sed '/.*service_monitoring.*/d' | crontab -
+fi
+
+numLineFound=$(crontab -l | grep "refreshcookieyelp.js" | wc -l)
+if [[ $numLineFound != "0" ]]
+then
+        echo "removing refreshcookieyelp.js existing entry"
+        crontab -l | sed '/.*refreshcookieyelp.*/d' | crontab -
+fi
+
+
+# Create logs folder
+LOGDIR="/home/aggre/phantom/js-scraper/script/ritesh/logs"
+if [ ! -d "$LOGDIR" ]; then
+	mkdir /home/aggre/phantom/js-scraper/script/ritesh/logs
+fi
+
+## refresh yelp cookies
+yelpcookierefresh="0 */6 * * * phantomjs /home/aggre/phantom/js-scraper/sources/refreshcookieyelp.js"
+## for alert of long running phantomjs process which is going to terminate
+alertphantom="*/10 * * * * /home/aggre/phantom/js-scraper/script/ritesh/check_terminatedPhantomjs.sh  > /home/aggre/phantom/js-scraper/script/ritesh/logs/check_terminatedPhantomjs_cron.log 2>&1"
+
+echo "adding new entries to crontab"
+(crontab -l ; echo "# Added by setup_unix.sh") | crontab -
+
+(crontab -l ; echo "## aggregationServerHealthCheck.sh - Server health check") | crontab -
+(crontab -l ; echo "$line_1") | crontab -
+(crontab -l ; echo "$line_2") | crontab -
+
+(crontab -l ; echo "## diskmon.sh - Monitor disk space") | crontab -
+(crontab -l ; echo "$diskmon") | crontab -
+(crontab -l ; echo "## load_average.sh - Identify average load on server") | crontab -
+(crontab -l ; echo "$loadaverage") | crontab -
+(crontab -l ; echo "## kill_long_tomcat.sh - Kill long running tomcat") | crontab -
+(crontab -l ; echo "$killtomcat") | crontab -
+(crontab -l ; echo "## mysql_status.sh - Mysql server status") | crontab -
+(crontab -l ; echo "$mysqlstatus") | crontab -
+(crontab -l ; echo "## yelp cookie refresh") | crontab -
+(crontab -l ; echo "$yelpcookierefresh") | crontab -
+(crontab -l ; echo "## for alert of long running phantomjs process which is going to terminate ") | crontab -
+(crontab -l ; echo "$alertphantom") | crontab -
+echo "ALL CRON JOB SET"
+echo "---------------------------------"
+crontab -l

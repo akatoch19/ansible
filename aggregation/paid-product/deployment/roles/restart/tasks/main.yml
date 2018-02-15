@@ -1,0 +1,23 @@
+---
+- name: running npm install
+  shell: npm install chdir={{ appdir }}/js-scraper
+  become: yes
+  become_user: root
+#  when: install_packages
+
+- name: "Check list of Node.js apps running."
+  command: forever list
+  register: forever_list
+  changed_when: false
+  sudo: yes
+
+- name: Stop and start npm forever
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+     - 'forever stopall'
+     - 'forever start --minUptime 1000 --spinSleepTime 1000 -o out.log -e err.log server.js'
+  sudo: yes
+
+- name: waitin for port 8080 to become active
+  wait_for: port=8080 delay=1 timeout=60
+  sudo: yes

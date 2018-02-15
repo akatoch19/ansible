@@ -1,0 +1,62 @@
+---
+###
+# Clones or pulls the repo from a public or private Git repository
+##
+
+- name : Before Deployemt update status @lead.birdeye.com
+  shell : wget -qO- "http://lead.birdeye.com/aggregation/updateserver?env=freeprod&ip="{{ ansible_host }}"&update_status=0&remark=Update Started" &> /dev/null;
+
+#- name: Clean js-scrapper path
+#  file:
+#    state: absent
+#    path: "{{ appdir }}/"
+
+- name: create deploy key directory if it does not exist
+  file: path={{ appdir }}/{{deploy_key_dir}} state=directory
+  sudo: yes
+
+- name: ensure deploy key is on remote server
+  copy: src={{ local_deploy_key_dir }}/git_key
+        dest={{ appdir }}/{{ deploy_key_dir }}/git_key
+        mode=0600 owner=root group=root
+  sudo: yes
+
+- name: checking "{{ appdir }}" directory ownership
+  file: dest={{ appdir }} state=directory group=root owner=root recurse=yes
+  become: yes
+  become_user: root
+
+- name: Ensure js-scraper dir exist
+  file: path={{ appdir }}/js-scraper state=directory group=root owner=root
+  become: yes
+  become_user: root
+
+- name: clone or pull latest aggregation js-scrapper code
+  git:  repo={{ code_repository }} dest={{ appdir }}/js-scraper
+        key_file={{ appdir }}/{{deploy_key_dir}}/git_key
+        accept_hostkey=yes
+        update=yes
+        force=yes
+        version={{ branch }}
+  register: git_output
+  become: yes
+  become_user: root
+
+- name: Copy config file to its location
+  copy: remote_src=True src={{ source }} dest={{ destination }}  group=root owner=root
+  sudo: yes
+
+#- name: Copy crontab script to new server
+#  template: src=setup_cron.sh.jinja2 dest=/root/setup_cron.sh group=root owner=root mode=0755
+#  sudo: yes
+
+#- name: Setup crontab on new server
+#  command: /bin/bash /root/setup_cron.sh >> /root/setup_cron_log.txt
+#  become: yes
+#  become_user: root
+
+#  shell: setup_cron.sh >> setup_cron_log.txt
+#  args:
+#    chdir: /root
+#    creates: setup_cron_log.txt
+#  sudo: yes

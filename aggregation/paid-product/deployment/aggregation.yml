@@ -1,0 +1,9 @@
+---
+- hosts: all  
+  user: "{{ user }}"
+  serial: 25
+  roles:
+    - git_c
+  tasks:
+   - name: Post Deployment update status @lead.birdeye.com 
+     shell: wget -qO- "http://lead.birdeye.com/aggregation/updateserver?env=prod&ip="{{ ansible_host }}"&update_status=1&remark=Updated Successfully" &> /dev/null;

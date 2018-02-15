@@ -1,0 +1,38 @@
+---
+- name: download file dpg file 
+  get_url:
+    url: "{{filebeat_dpkg_url}}"
+    dest: /tmp/
+    mode: 644
+  become: true
+  when: filebeat_true or update_node
+
+- name: install filebeat
+  shell: dpkg -i /tmp/filebeat*.deb
+  become: true
+  become_user: root
+  when: filebeat_true or update_node
+
+- name: copy filebeat conf to remote servers
+  template: src=filebeat.yml.j2 dest=/etc/filebeat/filebeat.yml owner=root mode=0644
+  become: true
+  become_user: root
+  when: update_node
+
+- name: copy filebeat.yml conf to remote servers
+  template: src={{item}}.j2 dest=/etc/filebeat/filebeat.yml owner=root mode=0644
+  with_items: [filebeat-common.yml]
+  become: true
+  when: filebeat_true
+
+#  template: src=filebeat-common.yml.j2 dest=/etc/filebeat/filebeat.yml owner=root mode=0644
+#  template: src=filebeat-common-err.yml.j2 dest=/etc/filebeat/filebeat-err.yml owner=root mode=0644
+
+- name: restart filebeat service 
+  service: 
+    name: filebeat
+    state: restarted
+    enabled: yes
+  become: true
+  become_user: root
+  when: filebeat_true or update_node

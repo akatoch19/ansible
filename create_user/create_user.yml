@@ -1,0 +1,47 @@
+---
+
+- hosts: all
+  serial: 200
+  tasks:
+
+  - name: Make sure we have a 'wheel' group
+    group:
+      name: wheel
+      state: present
+    become: yes
+    become_user: root
+
+  - name: Allow 'wheel' group to have passwordless sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%wheel'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    become: yes
+    become_user: root
+
+  - name: Ensure {{ Name }} User Exists
+    user: name={{ Name }}  state=present shell=/bin/bash createhome=yes
+    become: yes
+    become_user: root
+
+  - name: Add sudoers users to admin,sudo group
+    user: name={{ Name }} groups="sudo,wheel" append=yes shell=/bin/bash state=present createhome=yes
+    when: enablesudo
+    when: ansible_distribution == "Ubuntu"
+    become: yes
+    become_user: root
+  
+#  - name: Add sudoers users to wheel group
+#    user: name={{Name}} groups=wheel append=yes state=present createhome=yes
+#    when: enablesudo
+#    when: ansible_distribution == "Amazon"
+#    become: yes
+#    become_user: root
+
+  - name: Set up authorized keys for the deployer user
+    authorized_key: user="{{Name}}" key="{{item}}"
+    with_file:
+      - "{{PubRSAFile}}"
+    become: yes
+    become_user: root

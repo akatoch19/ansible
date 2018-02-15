@@ -1,0 +1,6 @@
+---
+PubRSAFile: "{{pubrsafile}}"
+Name: "{{name}}"
+enablesudo: true
+centos: false
+ubuntu: true

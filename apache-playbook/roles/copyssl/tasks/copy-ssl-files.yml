@@ -1,0 +1,37 @@
+---
+
+
+- name: Ensure {{ ssl_dir }}/{{ domain_name }} dir exist
+  file: path={{ ssl_dir }}/{{ domain_name }} state=directory
+  become: yes
+  become_user: root
+
+- name: Copy SSLCertificateFile to host 
+  copy: src={{ cert_path }}/{{ CertificateFile }} dest={{ ssl_dir }}/{{ domain_name }}/{{ CertificateFile }} mode=0640
+  become: yes
+  become_user: root
+
+- name: Copy CertificateKeyFile to host
+  copy : src={{ cert_path }}/{{ CertificateKeyFile }} dest={{ ssl_dir }}/{{ domain_name }}/{{ CertificateKeyFile }} mode=0600
+  become: yes
+  become_user: root
+
+- name: Copy CertificateChainFile to host
+  copy: src={{ cert_path }}/{{ CertificateChainFile }} dest={{ ssl_dir }}/{{ domain_name }}/{{ CertificateChainFile }} mode=0640
+  become: yes
+  become_user: root
+
+- name: Copy VirtualHost configutation file for {{ domain_name }} to remote
+  template: src=ssl-virtualhost.conf.j2 dest={{ apache_virtualhost_dir }}/{{ domain_name }}.conf owner=root mode=0644
+  become: yes
+  become_user: root
+
+- name: Ensure link is present to sites-enabled 
+  file: src={{ apache_virtualhost_dir }}/{{ domain_name }}.conf  dest={{ apache_virtualhost_link_dir }}/{{ domain_name }}.conf owner=root mode=0644 state=link
+  become: yes
+  become_user: root
+
+- name: Ensure log location {{ apache_log_dir }}/{{ ssl_hostname }} exist for {{ domain_name }}
+  file: path={{ apache_log_dir }}/{{ ssl_hostname }} state=directory
+  become: yes
+  become_user: root

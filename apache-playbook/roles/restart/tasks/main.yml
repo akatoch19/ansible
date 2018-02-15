@@ -1,0 +1,46 @@
+---
+
+- name: Check if Apache is running
+  shell: ps aux | grep apache2 | grep -v grep
+  ignore_errors: yes
+  changed_when: false
+  register: service_apache_status
+  become: yes
+  become_user: root
+
+- name: Report status of Apache
+  fail:
+    msg: |
+      Service apache2 is not running.
+      Return code from `grep`:
+      "{{ service_apache_status.rc }}"
+  when: service_apache_status.rc != 0
+
+- name: Restarting apache
+  command: "{{ bitnami_restart_script }} restart apache"
+  async: 30
+  poll: 0
+  become: yes
+  become_user: root
+
+- name: Waitin for apache to become active
+  wait_for: port=80 delay=1 timeout=90
+  register: http_port
+  become: yes
+  become_user: root
+
+- name: Check if Apache is running
+  shell: ps aux | grep apache2 | grep -v grep
+  ignore_errors: yes
+  changed_when: false
+  register: service_apache_status
+
+- name: Report status of Apache
+  fail:
+    msg: |
+      Service apache2 is not running.
+      Return code from `grep`:
+      {{ service_apache_status.rc }}
+  when: service_apache_status.rc != 0
+  become: yes
+  become_user: root

@@ -1,0 +1,18 @@
+---
+- name: Checking if {{ domain_name }} entry exist in the DB table {{db_table}}
+  command: >
+    mysql --user={{ db_user }} --password={{ db_password }} {{ db_database }} --host={{ db_host }} --batch --skip-column-names --execute="{{ select_db_query }}"
+  register: stuff
+  always_run: True
+  changed_when: False
+
+- name: Updating Mysql table {{ db_table }} for SSL Enabled domain {{ domain_name }}
+  command: mysql --user={{ db_user }} --password={{ db_password }} {{ db_database }} --host={{ db_host }} --batch --skip-column-names --execute="{{ db_query }}"
+  #register: stuff
+  when: stuff.stdout != ""
+
+- name: Running insert query on table {{ db_table }} for SSL Enabled domain {{ domain_name }} as domain not found in record
+  command: mysql --user={{ db_user }} --password={{ db_password }} {{ db_database }} --host={{ db_host }} --batch --skip-column-names --execute="{{ insert_db_query }}"
+  when: stuff.stdout == ""
+
+- debug: msg="{{ stuff.stdout }}"

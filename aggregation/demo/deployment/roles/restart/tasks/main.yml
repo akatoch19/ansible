@@ -1,0 +1,65 @@
+---
+- name: "Check list of Node.js apps running."
+  command: forever list
+  register: forever_list
+  changed_when: false
+  sudo: yes
+
+- name: Install packages based on package.json.
+  npm: path={{ appdir }}/js-scraper
+  become: yes
+  become_user: root
+
+  
+- name: Stop and start npm forever
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+     - 'forever stopall'
+     - 'forever start --minUptime 1000 --spinSleepTime 1000 -o out.log -e err.log server.js'
+  when:  updatenode != 'true'
+  sudo: yes
+
+#- name: Check kafka-listner-server.js is runnning
+#- name: Stop and start npm forever bam nodejs
+#  shell: chdir={{ appdir }}/js-scraper {{ item }}
+#  with_items:
+#    - 'forever stopall'
+#    - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#    - 'forever start --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#    - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#  become: yes
+#  become_user: root
+#  when: updatenode
+
+#- name: Check kafka-listner-server.js is runnning
+- name: Stop and start npm forever bam nodejs
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+    - 'forever stopall'
+#    - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#    - 'forever start --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#    - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+    - 'NODE_ENV=prod.daily-review-agg forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+
+  become: yes
+  become_user: root
+  when: updatenode and 'daily-review-agg' in group_names
+
+- name: Stop and start npm forever bam nodejs
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+    - 'forever stopall'
+    - 'NODE_ENV=prod.replies-agg forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+
+  become: yes
+  become_user: root
+  when: updatenode and 'replies-agg' in group_names
+
+
+
+
+
+- name: waitin for port 8080 to become active
+  wait_for: port=8080 delay=1 timeout=60
+  sudo: yes
+  when:  updatenode != "true"

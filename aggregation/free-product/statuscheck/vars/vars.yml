@@ -1,0 +1,4 @@
+---
+hosts: aggregation 
+user: devops
+serial: 50 

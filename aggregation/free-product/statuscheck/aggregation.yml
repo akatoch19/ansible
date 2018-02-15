@@ -1,0 +1,45 @@
+---
+- hosts: "{{ hosts }}"
+  user: "{{ user }}"
+  vars:
+    favcolor: blue
+  vars_files:
+    - vars/vars.yml 
+  serial: "{{ serial }}"
+  tasks:
+     - name: check if node is running
+       command: telnet {{ ansible_host }} 8080
+       failed_when: false
+       register: node_status
+     
+     - name: Stop and start npm forever
+       shell: chdir=/home/aggre/phantom/js-scraper {{ item }}
+       with_items:
+          - 'forever stopall'
+          - 'forever start --minUptime 1000 --spinSleepTime 1000 -o out.log -e err.log server.js'
+       sudo: yes
+       when: '"Escape character is" not in node_status.stdout'
+
+     - name: waitin for port 8080 to become active
+       wait_for: port=8080 delay=1 timeout=60
+       sudo: yes
+   
+     - name: check again if node is running
+       command: telnet {{ ansible_host }} 8080
+       failed_when: false
+       register: final_node
+
+     - name : Mark inactive if node is not running
+       shell: wget -qO- "http://lead.birdeye.com/aggregation/updateserver?env=freeprod&ip="{{ ansible_host }}"&status=0&update_status=0&remark=not  responding" &> /dev/null;
+       when: '"Escape character is" not in final_node.stdout'
+
+
+
+
+
+
+
+
+
+
+

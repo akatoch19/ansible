@@ -1,0 +1,20 @@
+---
+hosts: aggregation
+user: devops
+deploy_user: devops
+serial: 3
+appdir: "/home/aggre/phantom"
+dir: "{{ appdir }}/js-scraper"
+source: "{{ dir }}/config/config.demo.js"
+destination: "{{ dir }}/config/config.js"
+install_packages: true
+dbname: "bazaarify"
+#Git Details
+branch: "{{ Branch }}"
+deploy_key_dir: ssh-keys
+local_deploy_key_dir: /var/lib/jenkins/{{ deploy_key_dir }}
+code_repository: git@github.com:bazaarify/js-scraper.git
+update_node: "{{ UpdateNode }}"
+node_version: "8.4.0"
+filebeat_dpkg_url: "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.5.2-amd64.deb"
+filebeat_true: "{{ enable_filebeat }}"

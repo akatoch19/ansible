@@ -1,0 +1,28 @@
+base_dir: "/opt/lampstack-5.6.29-0"
+domain_name: "{{ domain }}"
+doc_root: "/opt/birdeyeapp/www"
+admin_email: "{{ adminemail }}"
+apache_dir: "{{ base_dir }}/apache2"
+ssl_hostname: "{{ sslhostname }}"
+ssl_dir: "/opt/birdeye/ssl"
+cert_path: "{{ certpath }}"
+CertificateFile: "{{ certfile }}"
+CertificateKeyFile: "{{ keyfile }}"
+CertificateChainFile: "{{ cabundlefile }}"
+apache_log_dir: "/mnt/logs"
+deploy_user: "bitnami"
+bitnami_restart_script: "{{ base_dir }}/ctlscript.sh"
+aws_profile: "{{ Account }}"
+aws_region: "{{ Region }}"
+ansible_user: "bitnami"
+apache_virtualhost_dir: "{{ apache_dir }}/conf/sites-available"
+apache_virtualhost_link_dir: "{{ apache_dir }}/conf/sites-enabled"
+db_host: 'db.birdeye.com'
+db_user: 'bfuser'
+db_password: 'bazaar360'
+db_database: 'bazaarify'
+db_table: 'website_domain'
+db_query: "UPDATE {{ db_table }} SET secure_enabled = 1 WHERE domain_name = \'{{ domain_name }}\'"
+#select_db_query: "SELECT domain_name from {{ db_table }} where domain_name = \'{{ domain_name }}\'"
+select_db_query: "SELECT secure_enabled from {{ db_table }} where domain_name = \'{{ domain_name }}\'"
+insert_db_query: "INSERT INTO {{ db_table }} ( domain_name, is_default, secure_enabled ) VALUES ( \'{{ domain_name }}\', 0, 1 )"

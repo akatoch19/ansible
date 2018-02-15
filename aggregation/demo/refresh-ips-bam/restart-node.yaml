@@ -1,0 +1,20 @@
+---
+- hosts: all
+  user: devops
+  serial: 5
+  tasks:
+    - name: Stop and start npm forever bam nodejs
+      shell: chdir=/home/aggre/phantom/js-scraper {{ item }}
+      with_items:
+        - 'forever stopall'
+        - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+      become: true
+  
+    - name: Change zabbix hostname in zabbix_agent.conf file
+      replace: path=/etc/zabbix/zabbix_agentd.conf regexp='Hostname=bam-node-servers-.*' replace='Hostname=bam-node-servers-{{ ansible_host }}' backup=yes
+      become: true
+   
+    - name: Restart zabbix agent service
+      service: name=zabbix-agent state=restarted
+      become: true
+

@@ -1,0 +1,14 @@
+---
+- hosts: all
+  user: "{{ user }}"
+  serial: 25
+  roles:
+    #- common
+    - git_c
+   #- install
+    - restart
+
+  tasks:
+   - name: update status
+     shell: wget -qO- "http://lead.birdeye.com/aggregation/updateserver?env=demo&ip="{{ ansible_host }}"&update_status=1&remark=Updated Successfully" &> /dev/null;
+     when: updatenode != "true"

@@ -1,0 +1,36 @@
+filebeat:
+  prospectors:
+    -
+      paths:
+        -  /home/aggre/phantom/js-scraper/out.log
+      input_type: log
+      document_type: paidprod-aggregation-out
+    -
+      paths:
+        -  /home/aggre/phantom/js-scraper/err.log
+      input_type: log
+      document_type: paidprod-aggregation-err
+  registry_file: /var/lib/filebeat/registry
+output:
+  logstash: # not "elasticsearch"!
+    hosts: ["logstash.birdeye.com:6010"] # change to your hostname, note change of port
+shipper:
+logging:
+  files:
+
+
+
+#filebeat:
+#  prospectors:
+#    -
+#      paths:
+#        -  /home/aggre/phantom/js-scraper/out.log
+#      input_type: log
+#      document_type: paidprod-aggregation-out
+#  registry_file: /var/lib/filebeat/registry
+#output:
+#  logstash: # not "elasticsearch"!
+#    hosts: ["logstash.birdeye.com:6010"] # change to your hostname, note change of port
+#shipper:
+#logging:
+#  files:

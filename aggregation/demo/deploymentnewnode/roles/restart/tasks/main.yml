@@ -1,0 +1,32 @@
+---
+- name: "Check list of Node.js apps running."
+  command: forever list
+  register: forever_list
+  changed_when: false
+
+- name: running npm install
+  shell: npm install chdir={{ appdir }}/js-scraper
+  become: yes
+
+#- name: Stop  npm forever
+#  shell: chdir={{ appdir }}/js-scraper {{ item }}
+#  with_items:
+#     - 'forever stopall'
+#  become: yes
+#  become_user: root
+
+- name: Stop  npm forever
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+     - 'forever stopall'
+
+- name: Start  npm forever
+  shell: chdir={{ appdir }}/js-scraper {{ item }}
+  with_items:
+#      - 'forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#     - 'forever start --minUptime 1000 --spinSleepTime 1000 -o kafka-listner-out.log -e kafka-listner-err.log kafka-listner-server.js'
+      - 'NODE_ENV=demo.daily-review-agg forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+      - 'NODE_ENV=demo.replies-agg forever start --killTree --minUptime 1000 --spinSleepTime 1000 -o logs/kafka-listner-out.log -e logs/kafka-listner-err.log kafka-listner-server.js'
+#- name: waitin for port 8080 to become active
+#  wait_for: port=8080 delay=1 timeout=60
+#  sudo: yes

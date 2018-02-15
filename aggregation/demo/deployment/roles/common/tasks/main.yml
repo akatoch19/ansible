@@ -1,0 +1,63 @@
+##
+# updates the APT package cache and install packages
+# servers necessary for web. also enables firewall
+##
+- name: update apt cache
+  apt: update_cache=yes
+  sudo: yes
+
+
+# Install Godam System Deendencies 
+
+- name: Install Python-Dev
+  apt: name=python-dev  state=present
+  sudo: yes
+
+- name: Install build-essential
+  apt: name=build-essential state=present
+  sudo: yes
+
+- name: Install libssl-dev
+  apt: name=libssl-dev state=present
+  sudo: yes
+
+- name: Install Python-Pip
+  apt: name=python-pip state=latest
+  sudo: yes
+
+- name: Install libffi-dev
+  apt: name=python-dev state=present
+  sudo: yes
+
+- name: Install NPM PIP package globally
+  npm: name=pip path=/home/aggre
+  sudo: yes
+
+- name: Install npm package npm install requests
+  npm: name=request path=/home/aggre
+  sudo: yes
+
+- name: Install npm package crack and install pip -U upgrade setuptools
+  script: ./script.sh
+#  npm: name=crack path=/home/aggre
+#  command: chdir=/home/aggre {{ item }}
+#  with_items:
+#    - npm install crack
+  sudo: yes
+
+#- name: upgrade pip
+#  pip:
+#    name: pip
+#    extra_args: --upgrade
+
+- name: Install global python requirements Scrapy 
+  pip: name=Scrapy state=present 
+  sudo: yes
+
+- name: Install global python requirements cryptography
+  pip: name=cryptography state=present  
+  sudo: yes
+
+- name: Install global python requirements incapsula-cracker
+  pip: name=incapsula-cracker state=present
+  sudo: yes

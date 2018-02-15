@@ -1,0 +1,15 @@
+filebeat:
+  prospectors:
+    -
+      paths:
+        - /home/aggre/phantom/js-scraper/logs/crawler.log
+        - /home/aggre/phantom/js-scraper/logs/kafka-listner-err.log
+      input_type: log
+      document_type: nodejs-kafka
+  registry_file: /var/lib/filebeat/registry
+output:
+  logstash: # not "elasticsearch"!
+    hosts: ["logstash.birdeye.com:5090"] # change to your hostname, note change of port
+shipper:
+logging:
+  files:
